@@ -1,21 +1,14 @@
 import React from "react";
 
-const DropDown = ({ name, label, value, options, error, onChange }) => {
+const DropDown = ({ name, label, options, error, ...rest }) => {
   return (
     <div className="form-group">
       <label htmlFor={name}>{label}</label>
-      <select
-        onChange={onChange}
-        className="form-control"
-        id={name}
-        value={value}
-      >
-        <option disabled value="">
-          Select {label}
-        </option>
-        {options.map((item) => (
-          <option value={item._id} key={item._id}>
-            {item.name}
+      <select name={name} {...rest} className="form-control" id={name}>
+        <option value="" />
+        {options.map((option) => (
+          <option value={option._id} key={option._id}>
+            {option.name}
           </option>
         ))}
       </select>

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getGenres } from "../../services/fakeGenreService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { saveMovie, getMovie } from "../../services/fakeMovieService";
-import Form from "./form";
 import DropDown from "./dropDown";
 import Joi from "joi";
 import Input from "./input";
@@ -17,12 +16,31 @@ const NewMovie = () => {
     dailyRentalRate: "",
   });
 
+  const Navigate = useNavigate();
+  const { id } = useParams();
+
   useEffect(() => {
     const genres = getGenres();
     setGenres(genres);
+
+    const movieId = id;
+    if (movieId === "new") return;
+
+    const movie = getMovie(movieId);
+    if (!movie) return Navigate("/not-found", { replace: true });
+
+    setData(mapToViewModel(movie));
   }, []);
 
-  const Navigate = useNavigate();
+  const mapToViewModel = (movie) => {
+    return {
+      _id: movie._id,
+      title: movie.title,
+      genreId: movie.genre._id,
+      numberInStock: movie.numberInStock,
+      dailyRentalRate: movie.dailyRentalRate,
+    };
+  };
 
   const schema = Joi.object({
     _id: Joi.string(),
@@ -59,23 +77,34 @@ const NewMovie = () => {
     e.preventDefault();
     const errors = validate();
     setErrors(errors || {});
-    console.log(errors);
 
-    // if (errors)
+    if (errors) {
+      return errors;
+    } else {
+      doSubmit();
+      return null; // Indicate no errors
+    }
   };
 
   const doSubmit = () => {
+    saveMovie(data);
     Navigate("/movies");
     console.log("submitted");
   };
 
-  const handleChange = ({ currentTarget: input }) => {
-    console.log(input.name);
+  const handleChange = ({ target: input }) => {
+    const newErrors = { ...errors };
+    const errorMessage = validateProperty(input);
+
+    if (errorMessage) newErrors[input.name] = errorMessage;
+    else delete newErrors[input.name];
 
     const newData = { ...data };
     newData[input.name] = input.value;
+
+    newData[input.name] = input.value;
     setData(newData);
-    // setErrors(newErrors);
+    setErrors(newErrors);
   };
 
   return (
