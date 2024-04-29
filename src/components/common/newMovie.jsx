@@ -19,6 +19,16 @@ const NewMovie = () => {
   const Navigate = useNavigate();
   const { id } = useParams();
 
+  const mapToViewModel = (movie) => {
+    return {
+      _id: movie._id,
+      title: movie.title,
+      genreId: movie.genre._id,
+      numberInStock: movie.numberInStock,
+      dailyRentalRate: movie.dailyRentalRate,
+    };
+  };
+
   useEffect(() => {
     const genres = getGenres();
     setGenres(genres);
@@ -30,29 +40,24 @@ const NewMovie = () => {
     if (!movie) return Navigate("/not-found", { replace: true });
 
     setData(mapToViewModel(movie));
-  }, []);
-
-  const mapToViewModel = (movie) => {
-    return {
-      _id: movie._id,
-      title: movie.title,
-      genreId: movie.genre._id,
-      numberInStock: movie.numberInStock,
-      dailyRentalRate: movie.dailyRentalRate,
-    };
-  };
+    console.log(data);
+  }, [id, Navigate]);
 
   const schema = Joi.object({
     _id: Joi.string(),
-    genreId: Joi.string().required().label("Genre"),
     title: Joi.string().min(5).max(100).required().label("Title"),
-    dailyRentalRate: Joi.number().min(0).max(10).required().label("Rate"),
+    genreId: Joi.string().required().label("Genre"),
     numberInStock: Joi.number()
       .integer()
       .min(0)
       .max(100)
       .required()
       .label("Number in stock"),
+    dailyRentalRate: Joi.number()
+      .min(0)
+      .max(10)
+      .required()
+      .label("Daily Rental Rate"),
   });
 
   const validateProperty = ({ name, value }) => {
@@ -82,11 +87,11 @@ const NewMovie = () => {
       return errors;
     } else {
       doSubmit();
-      return null; // Indicate no errors
     }
   };
 
   const doSubmit = () => {
+    console.log(data);
     saveMovie(data);
     Navigate("/movies");
     console.log("submitted");
